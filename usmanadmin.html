@@ -165,8 +165,12 @@
       
       <!-- Instant Auto Link Import (Amazon & Daraz) -->
       <div style="background:#f1f5f9; padding:10px; border-radius:8px; border:1px solid #cbd5e1; margin-bottom:12px;">
-        <label style="font-size:12px; font-weight:bold; color:#0f172a;">⚡ ایمیزون یا دراز پروڈکٹ کا لنک درج کریں (Just Paste Link):</label>
+        <label style="font-size:12px; font-weight:bold; color:#0f172a;">⚡ پروڈکٹ کا لنک درج کریں (Amazon / Daraz Link):</label>
         <input type="text" id="autoProductLink" placeholder="https://amazon.sa/... یا https://daraz.pk/..." dir="ltr" style="margin-top:4px;">
+        
+        <label style="font-size:12px; font-weight:bold; color:#0f172a; margin-top:8px; display:block;">🖼️ تصویر کا لنک درج کریں (Optional - اگر آٹو تصویر نہ آئے):</label>
+        <input type="text" id="autoProductImgUrl" placeholder="https://m.media-amazon.com/images/I/..." dir="ltr" style="margin-top:4px;">
+
         <div class="user-btn-row" style="margin-top:8px; margin-bottom:0;">
           <button class="user-btn-action" style="background:#ff9900; color:black;" onclick="fetchAndAddAutoProduct('amazon')">🛒 Amazon آٹو لائیو</button>
           <button class="user-btn-action" style="background:#ff5722; color:white;" onclick="fetchAndAddAutoProduct('daraz')">🧡 Daraz آٹو لائیو</button>
@@ -730,10 +734,13 @@
       });
     }
 
-    /* 5. Instant Amazon & Daraz Auto Product Import */
+    /* 5. Instant Amazon & Daraz Auto Product Import with Manual Image Fallback */
     async function fetchAndAddAutoProduct(platform) {
       const linkInput = document.getElementById('autoProductLink');
+      const imgInput = document.getElementById('autoProductImgUrl');
+      
       const link = linkInput.value.trim();
+      const manualImg = imgInput.value.trim();
       const loader = document.getElementById('autoFetchLoader');
 
       if (!link) {
@@ -743,72 +750,54 @@
 
       loader.style.display = "block";
 
-      try {
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(link)}`;
-        const response = await fetch(proxyUrl);
-        const data = await response.json();
-        
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(data.contents, 'text/html');
+      let finalImg = manualImg;
+      let title = platform === 'amazon' ? "Amazon Saudi Deal" : "Daraz Special Deal";
 
-        let title = doc.querySelector('meta[property="og:title"]')?.content || 
-                    doc.querySelector('title')?.innerText || 
-                    (platform === 'amazon' ? "Amazon Saudi Deal" : "Daraz Special Deal");
-        
-        let img = doc.querySelector('meta[property="og:image"]')?.content || 
-                  (platform === 'amazon' 
-                    ? "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" 
-                    : "https://upload.wikimedia.org/wikipedia/commons/4/4a/Daraz_Logo.png");
+      if (!finalImg) {
+        try {
+          const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(link)}`;
+          const response = await fetch(proxyUrl);
+          const data = await response.json();
+          
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(data.contents, 'text/html');
 
-        const serialCode = generateSerialNumber();
+          title = doc.querySelector('meta[property="og:title"]')?.content || 
+                  doc.querySelector('title')?.innerText || title;
+          
+          finalImg = doc.querySelector('meta[property="og:image"]')?.content || "";
+        } catch (error) {}
+      }
 
-        const productData = {
-          serialNumber: serialCode,
-          title: title.substring(0, 80),
-          price: "Best Deal",
-          link: link,
-          platform: platform, // 'amazon' or 'daraz'
-          images: [img],
-          img: img,
-          pinned: false,
-          timestamp: Date.now(),
-          shares: 0,
-          userPhone: 'Admin',
-          userName: 'Admin'
-        };
-
-        db.child(serialCode).set(productData).then(() => {
-          loader.style.display = "none";
-          alert(`کامیابی! ${platform.toUpperCase()} پروڈکٹ سیریل نمبر (${serialCode}) کے ساتھ لائیو ہو گئی ہے! 🚀`);
-          linkInput.value = '';
-        });
-
-      } catch (error) {
-        loader.style.display = "none";
-        const serialCode = generateSerialNumber();
-        const fallbackTitle = platform === 'amazon' ? "Amazon Saudi Deal" : "Daraz Special Deal";
-        const fallbackImg = platform === 'amazon' 
+      if (!finalImg) {
+        finalImg = platform === 'amazon' 
           ? "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" 
           : "https://upload.wikimedia.org/wikipedia/commons/4/4a/Daraz_Logo.png";
-
-        db.child(serialCode).set({
-          serialNumber: serialCode,
-          title: fallbackTitle,
-          price: "Best Deal",
-          link: link,
-          platform: platform,
-          images: [fallbackImg],
-          img: fallbackImg,
-          pinned: false,
-          timestamp: Date.now(),
-          shares: 0,
-          userPhone: 'Admin',
-          userName: 'Admin'
-        }).then(() => {
-          alert(`پروڈکٹ کا لنک سیریل نمبر (${serialCode}) کے ساتھ محفوظ ہو گیا ہے! 🚀`);
-          linkInput.value = '';
-        });
       }
+
+      const serialCode = generateSerialNumber();
+
+      const productData = {
+        serialNumber: serialCode,
+        title: title.substring(0, 80),
+        price: "Best Deal",
+        link: link,
+        platform: platform,
+        images: [finalImg],
+        img: finalImg,
+        pinned: false,
+        timestamp: Date.now(),
+        shares: 0,
+        userPhone: 'Admin',
+        userName: 'Admin'
+      };
+
+      db.child(serialCode).set(productData).then(() => {
+        loader.style.display = "none";
+        alert(`کامیابی! ${platform.toUpperCase()} پروڈکٹ سیریل نمبر (${serialCode}) کے ساتھ لائیو ہو گئی ہے! 🚀`);
+        linkInput.value = '';
+        imgInput.value = '';
+      });
     }
 
     /* 6. Single Manual Product Upload (Max 3 Images Limit) */
@@ -1036,8 +1025,9 @@
     }
 
     function toggleSelectAll(masterCheckbox) {
-      const checkboxes = document.querySelectorAll('.product-checkbox');
-      checkboxes.forEach(cb => cb.checked = masterCheckbox.checked);
+      const checkboxes = document.getElementById('selectAllCheckbox').checked;
+      const checkboxesList = document.querySelectorAll('.product-checkbox');
+      checkboxesList.forEach(cb => cb.checked = checkboxes);
       updateSelectedCount();
     }
 
