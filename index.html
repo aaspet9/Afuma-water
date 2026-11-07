@@ -67,7 +67,6 @@
 
     .serial-badge { background: #e0f2fe; color: #0284c7; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-bottom: 4px; border: 1px solid #bae6fd; font-family: monospace; }
 
-    /* Slider Container Support for Max 3 Images */
     .slider-wrapper { position: relative; width: 100%; height: 145px; border-radius: 8px; overflow: hidden; margin-bottom: 6px; background: #fdfdfd; cursor: pointer; }
     .product-media { width: 100%; height: 145px; object-fit: cover; border-radius: 8px; transition: transform 0.2s; }
     .slider-dots { position: absolute; bottom: 6px; left: 0; right: 0; display: flex; justify-content: center; gap: 4px; z-index: 3; }
@@ -77,7 +76,6 @@
     .product-title { font-size: 11px; font-weight: 600; color: #222222; margin-bottom: 4px; line-height: 1.3; height: 28px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
     .product-price { font-size: 13px; font-weight: 800; color: #ff4747; margin-bottom: 6px; }
 
-    /* Compact 2x2 Grid Layout for Buttons */
     .btn-action-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; width: 100%; }
     .buy-btn { background: linear-gradient(135deg, #ff4747 0%, #e60000 100%); color: #ffffff; text-decoration: none; text-align: center; padding: 7px 2px; border-radius: 14px; font-weight: bold; font-size: 10px; width: 100%; display: flex; align-items: center; justify-content: center; }
     .download-btn { background: #0891b2; color: #ffffff; border: none; padding: 7px 2px; border-radius: 14px; font-weight: bold; font-size: 10px; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 2px; }
@@ -95,7 +93,6 @@
     html[dir="ltr"] .close-modal { right: 15px; }
     .modal-input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 10px; font-size: 13px; outline: none; }
 
-    /* Image Zoom Preview Modal */
     .image-zoom-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 4000; padding: 10px; }
     .image-zoom-box { position: relative; max-width: 95%; max-height: 90vh; text-align: center; }
     .image-zoom-box img { width: 100%; max-height: 80vh; object-fit: contain; border-radius: 8px; border: 2px solid #ffffff; }
@@ -150,7 +147,7 @@
   </div>
 
   <div class="search-box-wrapper">
-    <input type="text" id="searchInput" class="search-input" placeholder="🔍 پروڈکٹ کا نام یا سیریل نمبر (GO1228) سرچ کریں..." oninput="debouncedSearch()">
+    <input type="text" id="searchInput" class="search-input" placeholder="🔍 پروڈکٹ کا نام یا سیریل نمبر (GO1228) سرچ کریں..." oninput="manualSearchInput()">
   </div>
 
   <div class="action-btn-group">
@@ -170,13 +167,16 @@
     </div>
   </div>
 
-  <div class="modal-overlay" id="authModal" style="display: flex;">
+  <!-- Login Modal With Skip/Cross Option -->
+  <div class="modal-overlay" id="authModal" style="display: none;">
     <div class="modal-box">
+      <button class="close-modal" onclick="closeAuthModal()">✕</button>
       <h3 style="margin-bottom: 12px; color:#2563eb; text-align:center;">🔐 Login / لاگ ان</h3>
       <input type="text" id="authName" class="modal-input" placeholder="Your Name">
       <input type="text" id="authPhone" class="modal-input" placeholder="05XXXXXXXX" dir="ltr">
       <input type="password" id="authPassword" class="modal-input" placeholder="••••••••">
       <button style="width:100%; background:#2563eb; color:white; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="submitAuth()">Continue 🚀</button>
+      <p style="text-align:center; font-size:11px; color:#64748b; margin-top:8px; cursor:pointer;" onclick="closeAuthModal()">یا بغیر لاگ ان ڈیلز دیکھیں (Skip)</p>
     </div>
   </div>
 
@@ -292,11 +292,15 @@
     let selectedProdTitle = "";
     let selectedProdLink = "";
     let searchQuery = '';
+    let isManualFilterActive = false; // اگر یوزر خود ٹائپ کرے تو فلٹر ہوگا، ورنہ نیچے اسکرولنگ چلے گی
     let searchTimeout = null;
     let userSharedProducts = {}; 
     let cachedData = null;
+
+    // لاگ ان سیشن کا ریکارڈ
     let currentUser = JSON.parse(localStorage.getItem('app_user_data') || 'null');
 
+    // **ایڈوانس URL پارسر**
     const urlParams = new URLSearchParams(window.location.search);
     let targetItemId = urlParams.get('item');
 
@@ -394,9 +398,11 @@
 
     let activeLang = 'en';
 
+    // **لاگ ان چیک کرنے اور اسکپ (Skip) اپڈیٹ والی لاجک**
     function checkUserSession() {
       const badge = document.getElementById('userProfileBadge');
       const authModal = document.getElementById('authModal');
+      
       if (currentUser) {
         badge.innerText = `👤 ${currentUser.name}`;
         authModal.style.display = 'none';
@@ -404,8 +410,13 @@
         loadUserSharedHistory();
       } else {
         badge.innerText = `🔑 Login`;
+        // اگر یوزر نے پہلے لاگ ان نہیں کیا تو ہر بار ایپ اوپن ہونے پر لاگ ان ڈائیلاگ دکھائے گا
         authModal.style.display = 'flex';
       }
+    }
+
+    function closeAuthModal() {
+      document.getElementById('authModal').style.display = 'none';
     }
 
     function handleAuthClick() {
@@ -477,6 +488,7 @@
       usersDb.child(phone).once('value', snap => {
         if(!snap.exists()) usersDb.child(phone).set(userObj);
         currentUser = userObj;
+        // لاگ ان ہو گیا، اب ہمیشہ کے لیے ڈیوائس میں محفوظ ہو جائے گا
         localStorage.setItem('app_user_data', JSON.stringify(userObj));
         checkUserSession();
       });
@@ -524,7 +536,6 @@
       } catch (e) { loader.style.display = "none"; }
     }
 
-    // **100% Guaranteed Download Function for All Mobile Phones**
     async function downloadImage(imgUrl, title) {
       try {
         alert("تصویر ڈاؤنلوڈ ہو رہی ہے... ⏳");
@@ -547,7 +558,6 @@
       }
     }
 
-    // **Image Zoom Preview Handler**
     function openZoomModal(imgUrl) {
       document.getElementById('zoomModalImg').src = imgUrl;
       document.getElementById('zoomModal').style.display = 'flex';
@@ -838,7 +848,9 @@
       });
     }
 
-    function debouncedSearch() {
+    // مینوئل کی بورڈ سے ٹائپ کرنے کا فنکشن
+    function manualSearchInput() {
+      isManualFilterActive = true;
       clearTimeout(searchTimeout);
       searchTimeout = setTimeout(() => {
         searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
@@ -868,7 +880,6 @@
       return adDiv;
     }
 
-    // Slider Dot Changing Logic
     window.changeSliderImg = function(event, pKey, imgUrl, dotIndex) {
       event.stopPropagation();
       const card = document.getElementById(`card_${pKey}`);
@@ -883,20 +894,21 @@
       }
     };
 
+    // **سرچ بار میں سیریل نمبر رہنے کے باوجود تمام پروڈکٹس ڈسپلے کرنے کی لاجک**
     function displayData(data) {
       const grid = document.getElementById('productsGrid');
       if (!data) { grid.innerHTML = `<p style="text-align: center; grid-column: span 2;">No products.</p>`; return; }
 
-      if (targetItemId && !searchQuery) {
+      // اگر سرچ بار میں ڈائریکٹ URL لنک سے سیریل نمبر آیا ہو
+      if (targetItemId && !isManualFilterActive) {
         const targetKeyLower = targetItemId.toLowerCase();
         Object.keys(data).forEach(k => {
           const item = data[k];
           const serial = item.serialNumber ? item.serialNumber.toLowerCase() : k.toLowerCase();
           if (serial === targetKeyLower || k.toLowerCase() === targetKeyLower) {
             const searchInput = document.getElementById('searchInput');
-            if (searchInput && searchInput.value === '') {
+            if (searchInput) {
               searchInput.value = item.serialNumber || k;
-              searchQuery = (item.serialNumber || k).toLowerCase();
             }
           }
         });
@@ -906,6 +918,7 @@
       const txt = i18n[activeLang];
       let count = 0;
 
+      // ٹارگٹڈ پروڈکٹ کو سب سے اوپر رکھنا
       const keys = Object.keys(data).sort((a, b) => {
         const itemA = data[a];
         const itemB = data[b];
@@ -925,7 +938,8 @@
         const serialTag = item.serialNumber || key;
         const serialLower = serialTag.toLowerCase();
 
-        if (searchQuery) {
+        // صرف تب سرچ فلٹر چلے گا اگر یوزر نے مینوئل سرچ بار میں کچھ ٹائپ کیا ہو
+        if (isManualFilterActive && searchQuery) {
           const titleMatch = item.title && item.title.toLowerCase().includes(searchQuery);
           const serialMatch = serialLower.includes(searchQuery) || key.toLowerCase().includes(searchQuery);
           if (!titleMatch && !serialMatch) return;
@@ -934,9 +948,8 @@
 
         const isTargeted = (targetItemId && (serialLower === targetItemId.toLowerCase() || key.toLowerCase() === targetItemId.toLowerCase()));
 
-        // **STRICT RULE: Maximum 3 Images allowed**
         let rawImages = item.images && item.images.length > 0 ? item.images : [item.img || 'https://via.placeholder.com/150'];
-        const imgList = rawImages.slice(0, 3); // کٹ کر کے صرف 3 کریں
+        const imgList = rawImages.slice(0, 3); 
 
         const totalSharesCount = item.shares || 0; 
         const userStatus = userSharedProducts[key] || null; 
@@ -959,7 +972,6 @@
           extraBtnClass = 'btn-pending'; 
         }
 
-        // Slider Dots Generator (Max 3)
         let dotsHtml = '';
         if(imgList.length > 1) {
           dotsHtml = '<div class="slider-dots">';
@@ -984,7 +996,6 @@
             <div class="product-price">${item.price}</div>
           </div>
           
-          <!-- Compact 2x2 Button Grid Layout -->
           <div class="btn-action-grid">
             <a href="${item.link}" target="_blank" class="buy-btn">${txt.buy}</a>
             <button class="download-btn" onclick="downloadImage('${imgList[0]}', '${item.title.replace(/'/g, "\\'")}')">${txt.save}</button>
@@ -1006,7 +1017,7 @@
       grid.innerHTML = '';
       grid.appendChild(fragment);
 
-      if (targetItemId) {
+      if (targetItemId && !isManualFilterActive) {
         setTimeout(() => {
           const el = document.querySelector('.highlight-card');
           if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
