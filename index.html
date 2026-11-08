@@ -125,7 +125,7 @@
     <span class="user-profile-badge" id="userProfileBadge" onclick="handleAuthClick()">🔑 Login</span>
   </div>
 
-  <div class="guide-bar-title" id="txtGuideTitle">📖 شیئرنگ کی ہدایات (کیسے پوسٹ کریں):</div>
+  <div class="guide-bar-title" id="txtGuideTitle">📖 Sharing Instructions (How to post):</div>
   <div class="guide-btn-group">
     <button class="guide-btn" onclick="openGuideModal('youtube')" id="gBtnYt">▶️ YouTube</button>
     <button class="guide-btn" onclick="openGuideModal('facebook')" id="gBtnFb">📘 Facebook</button>
@@ -136,18 +136,18 @@
 
   <div class="wallet-card">
     <div class="wallet-row">
-      <span id="txtPointsLabel">🪙 منظور شدہ شیئرز:</span>
+      <span id="txtPointsLabel">🪙 Approved Shares:</span>
       <span class="wallet-val" id="uPoints">0 Points</span>
     </div>
     <div class="wallet-row">
-      <span id="txtBalanceLabel">💰 کل رقم (5 پلیٹ فارم = 25 روپے):</span>
+      <span id="txtBalanceLabel">💰 Total Balance (5 Platforms = 25 PKR):</span>
       <span class="wallet-val" id="uEarnings">0 PKR (0 SAR)</span>
     </div>
     <button class="withdraw-btn" id="withdrawBtn" disabled onclick="openWithdrawModal()">💸 Withdraw Money (Min 50 SAR / 375 PKR)</button>
   </div>
 
   <div class="search-box-wrapper">
-    <input type="text" id="searchInput" class="search-input" placeholder="🔍 پروڈکٹ کا نام یا سیریل نمبر (GO1228) سرچ کریں..." oninput="manualSearchInput()">
+    <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search product or Serial Number..." oninput="manualSearchInput()">
   </div>
 
   <div class="action-btn-group">
@@ -176,7 +176,7 @@
       <input type="text" id="authPhone" class="modal-input" placeholder="05XXXXXXXX" dir="ltr">
       <input type="password" id="authPassword" class="modal-input" placeholder="••••••••">
       <button style="width:100%; background:#2563eb; color:white; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="submitAuth()">Continue 🚀</button>
-      <p style="text-align:center; font-size:11px; color:#64748b; margin-top:8px; cursor:pointer;" onclick="closeAuthModal()">یا بغیر لاگ ان ڈیلز دیکھیں (Skip)</p>
+      <p style="text-align:center; font-size:11px; color:#64748b; margin-top:8px; cursor:pointer;" onclick="closeAuthModal()">Skip Login</p>
     </div>
   </div>
 
@@ -192,8 +192,8 @@
   <div class="modal-overlay" id="proofModal">
     <div class="modal-box">
       <button class="close-modal" onclick="cancelUploadProofAndClear()">✕</button>
-      <h3 id="modalProofTitle" style="margin-bottom: 8px; color:#16a34a; text-align:center;">📸 5 پلیٹ فارم کے سکرین شاٹس اپلوڈ کریں</h3>
-      <p id="modalProofSub" style="font-size:11px; color:#64748b; text-align:center; margin-bottom:12px;">ہر پلیٹ فارم پر وہی پروڈکٹ پوسٹ کر کے 5 تصاویر سلیکٹ کریں (کل رقم: 25 روپے)</p>
+      <h3 id="modalProofTitle" style="margin-bottom: 8px; color:#16a34a; text-align:center;">📸 Upload 5 Platform Screenshots</h3>
+      <p id="modalProofSub" style="font-size:11px; color:#64748b; text-align:center; margin-bottom:12px;">Post the same deal on all 5 platforms and select 5 images (Earn 25 PKR)</p>
       
       <!-- YouTube Row -->
       <div class="file-row">
@@ -235,8 +235,8 @@
         <span id="badge5" style="display:none;" class="status-badge"></span>
       </div>
 
-      <div id="proofLoader" style="display:none; text-align:center; font-size:12px; color:#16a34a; font-weight:bold; margin:8px 0;">تصاویر میں لنک اسکین ہو رہا ہے... 🔍⏳</div>
-      <button id="btnSubmitProof" style="width:100%; background:#16a34a; color:white; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer; opacity:0.6;" disabled onclick="submit5ShareProofs()">تمام 5 سکرین شاٹ جمع کریں 🚀</button>
+      <div id="proofLoader" style="display:none; text-align:center; font-size:12px; color:#16a34a; font-weight:bold; margin:8px 0;">Scanning Image... 🔍⏳</div>
+      <button id="btnSubmitProof" style="width:100%; background:#16a34a; color:white; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer; opacity:0.6;" disabled onclick="submit5ShareProofs()">Submit All 5 Screenshots 🚀</button>
     </div>
   </div>
 
@@ -341,7 +341,10 @@
         modalTitle: "📸 Upload 5 Platform Screenshots", modalSub: "Post the same deal on all 5 platforms and select 5 images (Earn 25 PKR)",
         p1: "▶️ 1. YouTube Screenshot", p2: "📘 2. Facebook Screenshot", p3: "💬 3. WhatsApp Screenshot", p4: "📸 4. Instagram Screenshot", p5: "🎵 5. TikTok Screenshot",
         btnSubmit: "Submit All 5 Screenshots 🚀", btnVerify: "Verify 🔍",
-        alertTitle: "Cancel Upload Proof?", alertMsg: "Do you really want to cancel this sharing task? All currently selected and verified images will be lost."
+        alertTitle: "Cancel Upload Proof?", alertMsg: "Do you really want to cancel this sharing task? All currently selected and verified images will be lost.",
+        scanErr: "Error scanning image. Please try uploading again.",
+        wrongAppAlert: "❌ Wrong Screenshot!\nThis screenshot is not from {platform}. Please upload a valid {platform} screenshot.",
+        noLinkAlert: "❌ Product link or title not found in Screenshot #{index}. Please upload the correct post screenshot!"
       },
       ur: { 
         title: "🛍️ سعودی بیسٹ ڈیلز & ڈسکاؤنٹس", pub: "➕ اپنی ڈیلز شائع کریں", pro: "📌 ڈیل پروموٹ کروائیں", buy: "🛒 خریدیں", search: "🔍 پروڈکٹ کا نام یا سیریل نمبر سرچ کریں...", 
@@ -351,7 +354,10 @@
         modalTitle: "📸 5 پلیٹ فارم کے سکرین شاٹس اپلوڈ کریں", modalSub: "ہر پلیٹ فارم پر وہی پروڈکٹ پوسٹ کر کے 5 تصاویر سلیکٹ کریں (کل رقم: 25 روپے)",
         p1: "▶️ 1. یوٹیوب سکرین شاٹ", p2: "📘 2. فیس بک سکرین شاٹ", p3: "💬 3. واٹس ایپ سکرین شاٹ", p4: "📸 4. انسٹاگرام سکرین شاٹ", p5: "🎵 5. ٹک ٹاک سکرین شاٹ",
         btnSubmit: "تمام 5 سکرین شاٹ جمع کریں 🚀", btnVerify: "تصدیق کریں 🔍",
-        alertTitle: "ٹاسک منسوخ کریں؟", alertMsg: "کیا آپ واقعی اس ٹاسک کو منسوخ کرنا چاہتے ہیں؟ آپ کے سلیکٹ کردہ اور تصدیق شدہ سکرین شاٹس ضائع ہو جائیں گے۔"
+        alertTitle: "ٹاسک منسوخ کریں؟", alertMsg: "کیا آپ واقعی اس ٹاسک کو منسوخ کرنا چاہتے ہیں؟ آپ کے سلیکٹ کردہ اور تصدیق شدہ سکرین شاٹس ضائع ہو جائیں گے۔",
+        scanErr: "اسکیننگ کے دوران مسئلہ آیا، دوبارہ کوشش کریں۔",
+        wrongAppAlert: "❌ غلط اسکرین شاٹ!\nگوگل AI نے تصدیق کی ہے کہ یہ تصویر {platform} کی نہیں ہے۔ برائے مہربانی صرف {platform} ایپ کا سکرین شاٹ اپلوڈ کریں!",
+        noLinkAlert: "❌ اسکرین شاٹ #{index} میں پروڈکٹ لنک یا نام نہیں ملا۔ صحیح پوسٹ کا اسکرین شاٹ اپلوڈ کریں!"
       },
       ar: { 
         title: "🛍️ أفضل العروض والخصومات في السعودية", pub: "➕ انشر عروضك", pro: "📌 روج لمنتجك", buy: "🛒 شراء", search: "🔍 ابحث باسم المنتج أو الرقم التسلسلي...", 
@@ -361,7 +367,10 @@
         modalTitle: "📸 تحميل 5 لقطات شاشة للمنصات", modalSub: "انشر نفس المنتج على 5 منصات وحدد 5 صور (احصل على 25 بكر)",
         p1: "▶️ 1. لقطة شاشة يوتيوب", p2: "📘 2. لقطة شاشة فيسبوك", p3: "💬 3. لقطة شاشة واتساب", p4: "📸 4. لقطة شاشة انستغرام", p5: "🎵 5. لقطة شاشة تيك توك",
         btnSubmit: "إرسال جميع لقطات الشاشة الـ 5 🚀", btnVerify: "تحقق 🔍",
-        alertTitle: "إلغاء تحميل الإثبات؟", alertMsg: "هل تريد بالفعل إلغاء هذه المهمة؟ ستفقد جميع الصور المحددة والتي تم التحقق منها."
+        alertTitle: "إلغاء تحميل الإثبات؟", alertMsg: "هل تريد بالفعل إلغاء هذه المهمة؟ ستفقد جميع الصور المحددة والتي تم التحقق منها.",
+        scanErr: "حدث خطأ أثناء المسح، يرجى المحاولة مرة أخرى.",
+        wrongAppAlert: "❌ لقطة شاشة خاطئة!\nهذه الصورة ليست من {platform}. يرجى رفع لقطة شاشة صحيحة لـ {platform}.",
+        noLinkAlert: "❌ لم يتم العثور على رابط أو اسم المنتج في لقطة الشاشة #{index}. يرجى رفع لقطة الشاشة الصحيحة!"
       },
       hi: { 
         title: "🛍️ सऊदी बेस्ट डील्स और डिस्काउंट्स", pub: "➕ डील पब्लिश करें", pro: "📌 डील प्रमोट करें", buy: "🛒 खरीदें", search: "🔍 प्रोडक्ट नाम या सीरियल नंबर खोजें...", 
@@ -371,7 +380,10 @@
         modalTitle: "📸 5 प्लेटफॉर्म स्क्रीनशॉट अपलोड करें", modalSub: "सभी 5 प्लेटफॉर्म पर वही डील पोस्ट करें और 5 स्क्रीनशॉट लें (25 रुपये कमाएं)",
         p1: "▶️ 1. यूट्यूब स्क्रीनशॉट", p2: "📘 2. फेसबुक स्क्रीनशॉट", p3: "💬 3. व्हाट्सएप स्क्रीनशॉट", p4: "📸 4. इंस्टाग्राम स्क्रीनशॉट", p5: "🎵 5. टिकटॉक स्क्रीनशॉट",
         btnSubmit: "सभी 5 स्क्रीनशॉट जमा करें 🚀", btnVerify: "सत्यापन करें 🔍",
-        alertTitle: "अपलोड सबूत रद्द करें?", alertMsg: "क्या आप वाकई इस साझाकरण कार्य को रद्द करना चाहते हैं? सभी चयनित और सत्यापित चित्र खो जाएंगे।"
+        alertTitle: "अपलोड सबूत रद्द करें?", alertMsg: "क्या आप वाकई इस साझाकरण कार्य को रद्द करना चाहते हैं? सभी चयनित और सत्यापित चित्र खो जाएंगे।",
+        scanErr: "स्कैनिंग के दौरान त्रुटि आई, कृपया पुनः प्रयास करें।",
+        wrongAppAlert: "❌ गलत स्क्रीनशॉट!\nयह स्क्रीनशॉट {platform} का नहीं है। कृपया केवल {platform} का स्क्रीनशॉट अपलोड करें।",
+        noLinkAlert: "❌ स्क्रीनशॉट #{index} में प्रोडक्ट लिंक या नाम नहीं मिला। सही स्क्रीनशॉट अपलोड करें!"
       }
     };
 
@@ -488,7 +500,7 @@
       const name = document.getElementById('authName').value.trim();
       const phone = document.getElementById('authPhone').value.trim();
       const pass = document.getElementById('authPassword').value.trim();
-      if (!name || !phone || !pass) { alert("تمام معلومات درج کریں!"); return; }
+      if (!name || !phone || !pass) { alert("Please fill all details!"); return; }
 
       const userObj = { name: name, phone: phone, pass: pass, totalShares: 0 };
       usersDb.child(phone).once('value', snap => {
@@ -516,7 +528,7 @@
       const title = document.getElementById('uTitle').value.trim();
       const price = document.getElementById('uPrice').value.trim();
       const link = document.getElementById('uLink').value.trim();
-      if(!title || !link || !currentUserImg) { alert("تمام معلومات فراہم کریں!"); return; }
+      if(!title || !link || !currentUserImg) { alert("Please provide all required details!"); return; }
 
       const loader = document.getElementById('uLoader');
       loader.style.display = "block";
@@ -534,7 +546,7 @@
             userName: currentUser.name, userPhone: currentUser.phone, timestamp: Date.now()
           }).then(() => {
             loader.style.display = "none";
-            alert("آپ کی ڈیل ایڈمن کو بھیج دی گئی ہے! 🚀");
+            alert("Deal submitted to Admin! 🚀");
             closeUploadModal();
           });
         }
@@ -543,7 +555,7 @@
 
     async function downloadImage(imgUrl, title) {
       try {
-        alert("تصویر ڈاؤنلوڈ ہو رہی ہے... ⏳");
+        alert("Downloading image... ⏳");
         const response = await fetch(imgUrl, { mode: 'cors' });
         const blob = await response.blob();
         const blobUrl = window.URL.createObjectURL(blob);
@@ -557,7 +569,7 @@
         
         window.URL.revokeObjectURL(blobUrl);
         document.body.removeChild(a);
-        alert("کامیابی! تصویر موبائل گیلری میں سیو ہو گئی ہے 🚀");
+        alert("Success! Image saved to gallery 🚀");
       } catch (error) {
         window.open(imgUrl, '_blank');
       }
@@ -594,7 +606,7 @@
         }).catch(() => {});
       } else {
         navigator.clipboard.writeText(shareMessage);
-        alert("کامیابی! شیئر میسج اور لنک کاپی ہو گیا ہے۔");
+        alert("Success! Share link copied.");
         openProofModal(key, title, link);
       }
     }
@@ -647,7 +659,6 @@
         }
 
         document.getElementById('proofModal').style.display = 'none';
-        alert("OK ✅");
       }
     }
 
@@ -691,28 +702,27 @@
       return keywords;
     }
 
-    // Convert File object to Base64 String for Vision API
     function fileToBase64(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = () => {
-          let base64String = reader.result.split(',')[1];
+          let base64String = reader.result.replace(/^data:image\/(png|jpeg|jpg|webp);base64,/, "");
           resolve(base64String);
         };
         reader.onerror = error => reject(error);
       });
     }
 
-    // Google Cloud Vision AI Deep Image Scanner
     async function verifySingleImage(index) {
       if (!proofFiles[index]) return;
       const loader = document.getElementById('proofLoader');
       const verifyBtn = document.getElementById(`verifyBtn${index}`);
       const badge = document.getElementById(`badge${index}`);
+      const txt = i18n[activeLang];
 
       loader.style.display = 'block';
-      loader.innerText = `Google Vision AI scanning ${platformNames[index]} Screenshot... 🔍⏳`;
+      loader.innerText = `Scanning ${platformNames[index]} Screenshot... 🔍⏳`;
       verifyBtn.disabled = true;
 
       let targetLinkKey = extractUrlKey(selectedProdLink).toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -740,7 +750,7 @@
         });
 
         const visionResult = await visionResponse.json();
-        const responseData = visionResult.responses[0] || {};
+        const responseData = (visionResult.responses && visionResult.responses[0]) ? visionResult.responses[0] : {};
 
         let fullText = (responseData.fullTextAnnotation ? responseData.fullTextAnnotation.text : '').toLowerCase();
         let cleanScannedText = fullText.replace(/[^a-z0-9]/g, '');
@@ -748,14 +758,12 @@
         let logoAnnotations = responseData.logoAnnotations || [];
         let labelAnnotations = responseData.labelAnnotations || [];
 
-        let detectedLogos = logoAnnotations.map(l => l.description.toLowerCase());
-        let detectedLabels = labelAnnotations.map(l => l.description.toLowerCase());
+        let detectedLogos = logoAnnotations.map(l => l.description ? l.description.toLowerCase() : '');
+        let detectedLabels = labelAnnotations.map(l => l.description ? l.description.toLowerCase() : '');
 
         let targetPlatform = platformNames[index].toLowerCase();
-
         let isPlatformMatch = false;
 
-        // Strict Google AI Verification Logic
         if (detectedLogos.includes(targetPlatform) || detectedLabels.includes(targetPlatform)) {
           isPlatformMatch = true;
         } else {
@@ -763,7 +771,6 @@
           isPlatformMatch = requiredPlatformKw.some(kw => fullText.includes(kw));
         }
 
-        // Strict Exclusion Cross Checks
         if (index === 1 && (fullText.includes("create story") || fullText.includes("facebook"))) isPlatformMatch = false;
         if (index === 2 && (fullText.includes("shorts") || fullText.includes("subscribe"))) isPlatformMatch = false;
 
@@ -775,7 +782,7 @@
           verifyBtn.disabled = false;
           verifiedStates[index] = false;
           checkAllVerificationStatuses();
-          alert(`❌ غلط اسکرین شاٹ!\nگوگل AI نے تصدیق کی ہے کہ یہ تصویر ${platformNames[index]} کی نہیں ہے۔ برائے مہربانی صرف ${platformNames[index]} ایپ کا سکرین شاٹ اپلوڈ کریں!`);
+          alert(txt.wrongAppAlert.replace(/{platform}/g, platformNames[index]));
           return;
         }
 
@@ -793,7 +800,7 @@
             verifyBtn.disabled = false;
             verifiedStates[index] = false;
             checkAllVerificationStatuses();
-            alert(`❌ اسکرین شاٹ #${index} میں پروڈکٹ لنک یا نام نہیں ملا۔ صحیح پوسٹ کا اسکرین شاٹ اپلوڈ کریں!`);
+            alert(txt.noLinkAlert.replace(/{index}/g, index));
             return;
           }
         }
@@ -816,7 +823,7 @@
         }
       } catch(e) {
         verifyBtn.disabled = false;
-        alert("اسکیننگ کے دوران مسئلہ آیا، دوبارہ کوشش کریں۔");
+        alert(txt.scanErr);
       }
 
       loader.style.display = 'none';
