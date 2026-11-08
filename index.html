@@ -7,7 +7,6 @@
 
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -98,7 +97,6 @@
     .image-zoom-box img { width: 100%; max-height: 80vh; object-fit: contain; border-radius: 8px; border: 2px solid #ffffff; }
     .close-zoom-btn { position: absolute; top: -35px; right: 0; background: #ff4747; color: white; border: none; font-size: 16px; font-weight: bold; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; }
 
-    /* Custom File Row Layout for Proof Upload */
     .file-row { display: flex; align-items: center; justify-content: space-between; gap: 4px; margin-bottom: 8px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 6px; border-radius: 8px; }
     .file-btn-sm { flex: 1; text-align: left; background: #eff6ff; border: 1px dashed #2563eb; padding: 6px 8px; border-radius: 6px; font-size: 11px; font-weight: 500; cursor: pointer; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
     html[dir="rtl"] .file-btn-sm { text-align: right; }
@@ -293,6 +291,7 @@
     const pendingDb = firebase.database().ref("pending_products");
 
     const IMGBB_API_KEY = "66dcdf21e30733bfd85545d9fb5e76c4";
+    const GOOGLE_VISION_API_KEY = "AIzaSyAPN3iModqAS1iXwjRgNPD0mPsbc8j-yNc";
     const PKR_PER_SHARE = 25; 
     const SAR_RATE = 75;
 
@@ -324,11 +323,11 @@
     }
 
     const platformKeywords = {
-      1: ["home", "videos", "shorts", "posts", "turn on my community", "youtube"],
-      2: ["like", "comment", "share", "create story", "just now", "facebook"],
-      3: ["type a message", "write an update", "status", "chats", "whatsapp"],
-      4: ["your story", "view insights", "boost post", "instagram"],
-      5: ["for you", "following", "add comment", "tiktok"]
+      1: ["home", "videos", "shorts", "posts", "turn on my community", "youtube", "subscribe", "subscriptions"],
+      2: ["like", "comment", "share", "create story", "just now", "facebook", "reels", "public"],
+      3: ["type a message", "write an update", "status", "chats", "whatsapp", "calls", "updates"],
+      4: ["your story", "view insights", "boost post", "instagram", "explore"],
+      5: ["for you", "following", "add comment", "tiktok", "inbox"]
     };
 
     const platformNames = { 1: "YouTube", 2: "Facebook", 3: "WhatsApp", 4: "Instagram", 5: "TikTok" };
@@ -692,6 +691,20 @@
       return keywords;
     }
 
+    // Convert File object to Base64 String for Vision API
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+          let base64String = reader.result.split(',')[1];
+          resolve(base64String);
+        };
+        reader.onerror = error => reject(error);
+      });
+    }
+
+    // Google Cloud Vision AI Deep Image Scanner
     async function verifySingleImage(index) {
       if (!proofFiles[index]) return;
       const loader = document.getElementById('proofLoader');
@@ -699,26 +712,60 @@
       const badge = document.getElementById(`badge${index}`);
 
       loader.style.display = 'block';
-      loader.innerText = `Scanning ${platformNames[index]} UI & Link... 🔍⏳`;
+      loader.innerText = `Google Vision AI scanning ${platformNames[index]} Screenshot... 🔍⏳`;
       verifyBtn.disabled = true;
 
       let targetLinkKey = extractUrlKey(selectedProdLink).toLowerCase().replace(/[^a-z0-9]/g, '');
 
       try {
-        const ocrResult = await Tesseract.recognize(proofFiles[index], 'eng');
-        const scannedText = ocrResult.data.text.toLowerCase();
-        const cleanScannedText = scannedText.replace(/[^a-z0-9]/g, '');
+        const base64Image = await fileToBase64(proofFiles[index]);
 
-        const requiredPlatformKw = platformKeywords[index];
-        let isPlatformMatch = requiredPlatformKw.some(kw => scannedText.includes(kw));
+        const requestBody = {
+          requests: [
+            {
+              image: { content: base64Image },
+              features: [
+                { type: 'TEXT_DETECTION' },
+                { type: 'LOGO_DETECTION' },
+                { type: 'LABEL_DETECTION' }
+              ]
+            }
+          ]
+        };
 
-        if (index === 1 && (scannedText.includes("create story") || (scannedText.includes("like") && scannedText.includes("comment") && scannedText.includes("share")))) {
-          isPlatformMatch = false;
+        const visionResponse = await fetch(`https://vision.googleapis.com/v1/images:annotate?key=${GOOGLE_VISION_API_KEY}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody)
+        });
+
+        const visionResult = await visionResponse.json();
+        const responseData = visionResult.responses[0] || {};
+
+        let fullText = (responseData.fullTextAnnotation ? responseData.fullTextAnnotation.text : '').toLowerCase();
+        let cleanScannedText = fullText.replace(/[^a-z0-9]/g, '');
+
+        let logoAnnotations = responseData.logoAnnotations || [];
+        let labelAnnotations = responseData.labelAnnotations || [];
+
+        let detectedLogos = logoAnnotations.map(l => l.description.toLowerCase());
+        let detectedLabels = labelAnnotations.map(l => l.description.toLowerCase());
+
+        let targetPlatform = platformNames[index].toLowerCase();
+
+        let isPlatformMatch = false;
+
+        // Strict Google AI Verification Logic
+        if (detectedLogos.includes(targetPlatform) || detectedLabels.includes(targetPlatform)) {
+          isPlatformMatch = true;
+        } else {
+          const requiredPlatformKw = platformKeywords[index];
+          isPlatformMatch = requiredPlatformKw.some(kw => fullText.includes(kw));
         }
 
-        if (index === 2 && (scannedText.includes("shorts") && scannedText.includes("videos"))) {
-          isPlatformMatch = false;
-        }
+        // Strict Exclusion Cross Checks
+        if (index === 1 && (fullText.includes("create story") || fullText.includes("facebook"))) isPlatformMatch = false;
+        if (index === 2 && (fullText.includes("shorts") || fullText.includes("subscribe"))) isPlatformMatch = false;
 
         if (!isPlatformMatch) {
           loader.style.display = "none";
@@ -728,7 +775,7 @@
           verifyBtn.disabled = false;
           verifiedStates[index] = false;
           checkAllVerificationStatuses();
-          alert(`❌ غلط اسکرین شاٹ!\nیہ تصویر ${platformNames[index]} کی نہیں ہے۔ برائے مہربانی صرف ${platformNames[index]} ایپ کا سکرین شاٹ اپلوڈ کریں!`);
+          alert(`❌ غلط اسکرین شاٹ!\nگوگل AI نے تصدیق کی ہے کہ یہ تصویر ${platformNames[index]} کی نہیں ہے۔ برائے مہربانی صرف ${platformNames[index]} ایپ کا سکرین شاٹ اپلوڈ کریں!`);
           return;
         }
 
