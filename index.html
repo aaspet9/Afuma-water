@@ -7,6 +7,7 @@
 
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -125,7 +126,7 @@
     <span class="user-profile-badge" id="userProfileBadge" onclick="handleAuthClick()">🔑 Login</span>
   </div>
 
-  <div class="guide-bar-title" id="txtGuideTitle">📖 Sharing Instructions (How to post):</div>
+  <div class="guide-bar-title" id="txtGuideTitle">📖 شیئرنگ کی ہدایات (کیسے پوسٹ کریں):</div>
   <div class="guide-btn-group">
     <button class="guide-btn" onclick="openGuideModal('youtube')" id="gBtnYt">▶️ YouTube</button>
     <button class="guide-btn" onclick="openGuideModal('facebook')" id="gBtnFb">📘 Facebook</button>
@@ -136,18 +137,18 @@
 
   <div class="wallet-card">
     <div class="wallet-row">
-      <span id="txtPointsLabel">🪙 Approved Shares:</span>
+      <span id="txtPointsLabel">🪙 منظور شدہ شیئرز:</span>
       <span class="wallet-val" id="uPoints">0 Points</span>
     </div>
     <div class="wallet-row">
-      <span id="txtBalanceLabel">💰 Total Balance (5 Platforms = 25 PKR):</span>
+      <span id="txtBalanceLabel">💰 کل رقم (5 پلیٹ فارم = 25 روپے):</span>
       <span class="wallet-val" id="uEarnings">0 PKR (0 SAR)</span>
     </div>
     <button class="withdraw-btn" id="withdrawBtn" disabled onclick="openWithdrawModal()">💸 Withdraw Money (Min 50 SAR / 375 PKR)</button>
   </div>
 
   <div class="search-box-wrapper">
-    <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search product or Serial Number..." oninput="manualSearchInput()">
+    <input type="text" id="searchInput" class="search-input" placeholder="🔍 پروڈکٹ کا نام یا سیریل نمبر (GO1228) سرچ کریں..." oninput="manualSearchInput()">
   </div>
 
   <div class="action-btn-group">
@@ -176,7 +177,7 @@
       <input type="text" id="authPhone" class="modal-input" placeholder="05XXXXXXXX" dir="ltr">
       <input type="password" id="authPassword" class="modal-input" placeholder="••••••••">
       <button style="width:100%; background:#2563eb; color:white; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="submitAuth()">Continue 🚀</button>
-      <p style="text-align:center; font-size:11px; color:#64748b; margin-top:8px; cursor:pointer;" onclick="closeAuthModal()">Skip Login</p>
+      <p style="text-align:center; font-size:11px; color:#64748b; margin-top:8px; cursor:pointer;" onclick="closeAuthModal()">یا بغیر لاگ ان ڈیلز دیکھیں (Skip)</p>
     </div>
   </div>
 
@@ -192,8 +193,8 @@
   <div class="modal-overlay" id="proofModal">
     <div class="modal-box">
       <button class="close-modal" onclick="cancelUploadProofAndClear()">✕</button>
-      <h3 id="modalProofTitle" style="margin-bottom: 8px; color:#16a34a; text-align:center;">📸 Upload 5 Platform Screenshots</h3>
-      <p id="modalProofSub" style="font-size:11px; color:#64748b; text-align:center; margin-bottom:12px;">Post the same deal on all 5 platforms and select 5 images (Earn 25 PKR)</p>
+      <h3 id="modalProofTitle" style="margin-bottom: 8px; color:#16a34a; text-align:center;">📸 5 پلیٹ فارم کے سکرین شاٹس اپلوڈ کریں</h3>
+      <p id="modalProofSub" style="font-size:11px; color:#64748b; text-align:center; margin-bottom:12px;">ہر پلیٹ فارم پر وہی پروڈکٹ پوسٹ کر کے 5 تصاویر سلیکٹ کریں (کل رقم: 25 روپے)</p>
       
       <!-- YouTube Row -->
       <div class="file-row">
@@ -235,8 +236,8 @@
         <span id="badge5" style="display:none;" class="status-badge"></span>
       </div>
 
-      <div id="proofLoader" style="display:none; text-align:center; font-size:12px; color:#16a34a; font-weight:bold; margin:8px 0;">Scanning Image... 🔍⏳</div>
-      <button id="btnSubmitProof" style="width:100%; background:#16a34a; color:white; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer; opacity:0.6;" disabled onclick="submit5ShareProofs()">Submit All 5 Screenshots 🚀</button>
+      <div id="proofLoader" style="display:none; text-align:center; font-size:12px; color:#16a34a; font-weight:bold; margin:8px 0;">تصاویر میں لنک اسکین ہو رہا ہے... 🔍⏳</div>
+      <button id="btnSubmitProof" style="width:100%; background:#16a34a; color:white; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer; opacity:0.6;" disabled onclick="submit5ShareProofs()">تمام 5 سکرین شاٹ جمع کریں 🚀</button>
     </div>
   </div>
 
@@ -291,7 +292,6 @@
     const pendingDb = firebase.database().ref("pending_products");
 
     const IMGBB_API_KEY = "66dcdf21e30733bfd85545d9fb5e76c4";
-    const GOOGLE_VISION_API_KEY = "AIzaSyAPN3iModqAS1iXwjRgNPD0mPsbc8j-yNc";
     const PKR_PER_SHARE = 25; 
     const SAR_RATE = 75;
 
@@ -322,12 +322,13 @@
       }
     }
 
+    // Precise UI Keywords for Tesseract OCR Engine tailored for User Screenshots
     const platformKeywords = {
-      1: ["home", "videos", "shorts", "posts", "turn on my community", "youtube", "subscribe", "subscriptions"],
-      2: ["like", "comment", "share", "create story", "just now", "facebook", "reels", "public"],
-      3: ["type a message", "write an update", "status", "chats", "whatsapp", "calls", "updates"],
-      4: ["your story", "view insights", "boost post", "instagram", "explore"],
-      5: ["for you", "following", "add comment", "tiktok", "inbox"]
+      1: ["home", "videos", "shorts", "posts", "community", "youtube", "subscribe", "subscriptions", "minutes ago"],
+      2: ["manage posts", "photos", "reels", "just now", "facebook", "public", "like", "comment", "share"],
+      3: ["groups share", "add members", "invite via link", "group settings", "whatsapp", "message", "only admins can edit", "were added"],
+      4: ["reels", "insights", "boost", "instagram", "afumamineralwater", "get inspired on edits", "ai content"],
+      5: ["stem", "following", "friends", "for you", "tiktok", "inbox", "aliexpress affiliate", "joga sem parar"]
     };
 
     const platformNames = { 1: "YouTube", 2: "Facebook", 3: "WhatsApp", 4: "Instagram", 5: "TikTok" };
@@ -341,10 +342,7 @@
         modalTitle: "📸 Upload 5 Platform Screenshots", modalSub: "Post the same deal on all 5 platforms and select 5 images (Earn 25 PKR)",
         p1: "▶️ 1. YouTube Screenshot", p2: "📘 2. Facebook Screenshot", p3: "💬 3. WhatsApp Screenshot", p4: "📸 4. Instagram Screenshot", p5: "🎵 5. TikTok Screenshot",
         btnSubmit: "Submit All 5 Screenshots 🚀", btnVerify: "Verify 🔍",
-        alertTitle: "Cancel Upload Proof?", alertMsg: "Do you really want to cancel this sharing task? All currently selected and verified images will be lost.",
-        scanErr: "Error scanning image. Please try uploading again.",
-        wrongAppAlert: "❌ Wrong Screenshot!\nThis screenshot is not from {platform}. Please upload a valid {platform} screenshot.",
-        noLinkAlert: "❌ Product link or title not found in Screenshot #{index}. Please upload the correct post screenshot!"
+        alertTitle: "Cancel Upload Proof?", alertMsg: "Do you really want to cancel this sharing task? All currently selected and verified images will be lost."
       },
       ur: { 
         title: "🛍️ سعودی بیسٹ ڈیلز & ڈسکاؤنٹس", pub: "➕ اپنی ڈیلز شائع کریں", pro: "📌 ڈیل پروموٹ کروائیں", buy: "🛒 خریدیں", search: "🔍 پروڈکٹ کا نام یا سیریل نمبر سرچ کریں...", 
@@ -354,10 +352,7 @@
         modalTitle: "📸 5 پلیٹ فارم کے سکرین شاٹس اپلوڈ کریں", modalSub: "ہر پلیٹ فارم پر وہی پروڈکٹ پوسٹ کر کے 5 تصاویر سلیکٹ کریں (کل رقم: 25 روپے)",
         p1: "▶️ 1. یوٹیوب سکرین شاٹ", p2: "📘 2. فیس بک سکرین شاٹ", p3: "💬 3. واٹس ایپ سکرین شاٹ", p4: "📸 4. انسٹاگرام سکرین شاٹ", p5: "🎵 5. ٹک ٹاک سکرین شاٹ",
         btnSubmit: "تمام 5 سکرین شاٹ جمع کریں 🚀", btnVerify: "تصدیق کریں 🔍",
-        alertTitle: "ٹاسک منسوخ کریں؟", alertMsg: "کیا آپ واقعی اس ٹاسک کو منسوخ کرنا چاہتے ہیں؟ آپ کے سلیکٹ کردہ اور تصدیق شدہ سکرین شاٹس ضائع ہو جائیں گے۔",
-        scanErr: "اسکیننگ کے دوران مسئلہ آیا، دوبارہ کوشش کریں۔",
-        wrongAppAlert: "❌ غلط اسکرین شاٹ!\nگوگل AI نے تصدیق کی ہے کہ یہ تصویر {platform} کی نہیں ہے۔ برائے مہربانی صرف {platform} ایپ کا سکرین شاٹ اپلوڈ کریں!",
-        noLinkAlert: "❌ اسکرین شاٹ #{index} میں پروڈکٹ لنک یا نام نہیں ملا۔ صحیح پوسٹ کا اسکرین شاٹ اپلوڈ کریں!"
+        alertTitle: "ٹاسک منسوخ کریں؟", alertMsg: "کیا آپ واقعی اس ٹاسک کو منسوخ کرنا چاہتے ہیں؟ آپ کے سلیکٹ کردہ اور تصدیق شدہ سکرین شاٹس ضائع ہو جائیں گے۔"
       },
       ar: { 
         title: "🛍️ أفضل العروض والخصومات في السعودية", pub: "➕ انشر عروضك", pro: "📌 روج لمنتجك", buy: "🛒 شراء", search: "🔍 ابحث باسم المنتج أو الرقم التسلسلي...", 
@@ -367,10 +362,7 @@
         modalTitle: "📸 تحميل 5 لقطات شاشة للمنصات", modalSub: "انشر نفس المنتج على 5 منصات وحدد 5 صور (احصل على 25 بكر)",
         p1: "▶️ 1. لقطة شاشة يوتيوب", p2: "📘 2. لقطة شاشة فيسبوك", p3: "💬 3. لقطة شاشة واتساب", p4: "📸 4. لقطة شاشة انستغرام", p5: "🎵 5. لقطة شاشة تيك توك",
         btnSubmit: "إرسال جميع لقطات الشاشة الـ 5 🚀", btnVerify: "تحقق 🔍",
-        alertTitle: "إلغاء تحميل الإثبات؟", alertMsg: "هل تريد بالفعل إلغاء هذه المهمة؟ ستفقد جميع الصور المحددة والتي تم التحقق منها.",
-        scanErr: "حدث خطأ أثناء المسح، يرجى المحاولة مرة أخرى.",
-        wrongAppAlert: "❌ لقطة شاشة خاطئة!\nهذه الصورة ليست من {platform}. يرجى رفع لقطة شاشة صحيحة لـ {platform}.",
-        noLinkAlert: "❌ لم يتم العثور على رابط أو اسم المنتج في لقطة الشاشة #{index}. يرجى رفع لقطة الشاشة الصحيحة!"
+        alertTitle: "إلغاء تحميل الإثبات؟", alertMsg: "هل تريد بالفعل إلغاء هذه المهمة؟ ستفقد جميع الصور المحددة والتي تم التحقق منها."
       },
       hi: { 
         title: "🛍️ सऊदी बेस्ट डील्स और डिस्काउंट्स", pub: "➕ डील पब्लिश करें", pro: "📌 डील प्रमोट करें", buy: "🛒 खरीदें", search: "🔍 प्रोडक्ट नाम या सीरियल नंबर खोजें...", 
@@ -380,10 +372,7 @@
         modalTitle: "📸 5 प्लेटफॉर्म स्क्रीनशॉट अपलोड करें", modalSub: "सभी 5 प्लेटफॉर्म पर वही डील पोस्ट करें और 5 स्क्रीनशॉट लें (25 रुपये कमाएं)",
         p1: "▶️ 1. यूट्यूब स्क्रीनशॉट", p2: "📘 2. फेसबुक स्क्रीनशॉट", p3: "💬 3. व्हाट्सएप स्क्रीनशॉट", p4: "📸 4. इंस्टाग्राम स्क्रीनशॉट", p5: "🎵 5. टिकटॉक स्क्रीनशॉट",
         btnSubmit: "सभी 5 स्क्रीनशॉट जमा करें 🚀", btnVerify: "सत्यापन करें 🔍",
-        alertTitle: "अपलोड सबूत रद्द करें?", alertMsg: "क्या आप वाकई इस साझाकरण कार्य को रद्द करना चाहते हैं? सभी चयनित और सत्यापित चित्र खो जाएंगे।",
-        scanErr: "स्कैनिंग के दौरान त्रुटि आई, कृपया पुनः प्रयास करें।",
-        wrongAppAlert: "❌ गलत स्क्रीनशॉट!\nयह स्क्रीनशॉट {platform} का नहीं है। कृपया केवल {platform} का स्क्रीनशॉट अपलोड करें।",
-        noLinkAlert: "❌ स्क्रीनशॉट #{index} में प्रोडक्ट लिंक या नाम नहीं मिला। सही स्क्रीनशॉट अपलोड करें!"
+        alertTitle: "अपलोड सबूत रद्द करें?", alertMsg: "क्या आप वाकई इस साझाकरण कार्य को रद्द करना चाहते हैं? सभी चयनित और सत्यापित चित्र खो जाएंगे।"
       }
     };
 
@@ -391,29 +380,29 @@
       en: {
         youtube: { title: "▶️ How to post on YouTube", text: "1. Click Save image to gallery.<br>2. Click Share to copy link & info.<br>3. Upload image on YouTube Shorts or Community Post.<br>4. Add your voice/music and paste copied link in description.<br>5. Take screenshot and upload in app." },
         facebook: { title: "📘 How to post on Facebook", text: "1. Click Save image to gallery.<br>2. Click Share to copy link & info.<br>3. Upload image on Facebook Post or Story.<br>4. Add your voice/music and paste copied link.<br>5. Take screenshot and upload in app." },
-        whatsapp: { title: "💬 How to post on WhatsApp", text: "1. Save product image to gallery.<br>2. Copy product link via Share button.<br>3. Upload image to WhatsApp Status/Channel with audio.<br>4. Paste copied product link in caption.<br>5. Take screenshot and upload in app." },
-        instagram: { title: "📸 How to post on Instagram", text: "1. Save product image to gallery.<br>2. Copy product link.<br>3. Upload image on Instagram Story/Post.<br>4. Add music sticker and link sticker/bio.<br>5. Take screenshot and upload in app." },
+        whatsapp: { title: "💬 How to post on WhatsApp", text: "1. Save product image to gallery.<br>2. Copy product link via Share button.<br>3. Upload image to WhatsApp Status/Channel/Group.<br>4. Paste copied product link in caption.<br>5. Take screenshot and upload in app." },
+        instagram: { title: "📸 How to post on Instagram", text: "1. Save product image to gallery.<br>2. Copy product link.<br>3. Upload image on Instagram Story/Post/Reel.<br>4. Add music sticker and link sticker/bio.<br>5. Take screenshot and upload in app." },
         tiktok: { title: "🎵 How to post on TikTok", text: "1. Save product image to gallery.<br>2. Copy product link.<br>3. Upload image slideshow/video on TikTok with music.<br>4. Paste product details & link in caption/comments.<br>5. Take screenshot and upload in app." }
       },
       ur: {
         youtube: { title: "▶️ یوٹیوب پر پوسٹ کرنے کا طریقہ", text: "1. Save کا بٹن دبا کر تصویر ڈاؤنلوڈ کریں۔<br>2. Share کا بٹن دبا کر لنک کاپی کریں۔<br>3. یوٹیوب پر تصویر اپلوڈ کر کے اپنی آواز یا میوزک شامل کریں۔<br>4. کاپی کیا ہوا لنک ڈسکرپشن یا کمنٹ میں پیسٹ کریں۔<br>5. اس کا سکرین شاٹ لے کر اپلوڈ کریں۔" },
         facebook: { title: "📘 فیس بک پر پوسٹ کرنے کا طریقہ", text: "1. Save کا بٹن دبا کر تصویر ڈاؤنلوڈ کریں۔<br>2. Share کا بٹن دبا کر لنک کاپی کریں۔<br>3. فیس بک پر تصویر اپلوڈ کریں اور میوزک/وائس شامل کریں۔<br>4. کاپی کیا ہوا لنک ٹیکسٹ میں پیسٹ کریں۔<br>5. اس کا سکرین شاٹ لے کر اپلوڈ کریں۔" },
-        whatsapp: { title: "💬 واٹس ایپ پر پوسٹ کرنے کا طریقہ", text: "1. Save کا بٹن دبا کر تصویر ڈاؤنلوڈ کریں۔<br>2. Share کا بٹن دبا کر لنک کاپی کریں۔<br>3. واٹس ایپ سٹیٹس یا چینل پر تصویر لگائیں۔<br>4. کاپی کیا ہوا لنک کیپشن میں پیسٹ کریں۔<br>5. واضح سکرین شاٹ لے کر اپلوڈ کریں۔" },
-        instagram: { title: "📸 انسٹاگرام پر پوسٹ کرنے کا طریقہ", text: "1. Save کا بٹن دبا کر تصویر ڈاؤنلوڈ کریں۔<br>2. Share کا بٹن دبا کر لنک کاپی کریں۔<br>3. انسٹاگرام سٹوری یا پوسٹ پر تصویر لگائیں۔<br>4. میوزک شامل کریں اور Link کا اسٹیکر لگائیں۔<br>5. سکرین شاٹ لے کر اپلوڈ کریں۔" },
+        whatsapp: { title: "💬 واٹس ایپ پر پوسٹ کرنے کا طریقہ", text: "1. Save کا بٹن دبا کر تصویر ڈاؤنلوڈ کریں۔<br>2. Share کا بٹن دبا کر لنک کاپی کریں۔<br>3. واٹس ایپ سٹیٹس، چینل یا گروپ پر تصویر لگائیں۔<br>4. کاپی کیا ہوا لنک کیپشن میں پیسٹ کریں۔<br>5. واضح سکرین شاٹ لے کر اپلوڈ کریں۔" },
+        instagram: { title: "📸 انسٹاگرام پر پوسٹ کرنے کا طریقہ", text: "1. Save کا بٹن دبا کر تصویر ڈاؤنلوڈ کریں۔<br>2. Share کا بٹن دبا کر لنک کاپی کریں۔<br>3. انسٹاگرام سٹوری، ریل یا پوسٹ پر تصویر لگائیں۔<br>4. میوزک شامل کریں اور Link کا اسٹیکر لگائیں۔<br>5. سکرین شاٹ لے کر اپلوڈ کریں۔" },
         tiktok: { title: "🎵 ٹک ٹاک پر پوسٹ کرنے کا طریقہ", text: "1. Save کا بٹن دبا کر تصویر ڈاؤنلوڈ کریں۔<br>2. Share کا بٹن دبا کر لنک کاپی کریں۔<br>3. ٹک ٹاک پر تصویر اپلوڈ کریں اور ساؤنڈ شامل کریں۔<br>4. کاپی کیا ہوا لنک کیپشن یا کمنٹس میں پیسٹ کریں۔<br>5. سکرین شاٹ لے کر اپلوڈ کریں۔" }
       },
       ar: {
         youtube: { title: "▶️ كيفية النشر على يوتيوب", text: "1. احفظ الصورة في الاستوديو.<br>2. انسخ الرابط بالضغط على مشاركة.<br>3. ارفع الصورة على يوتيوب وأضف الصوت والرابط.<br>4. التقط لقطة شاشة وارفعها." },
         facebook: { title: "📘 كيفية النشر على فيسبوك", text: "1. احفظ الصورة في الاستوديو.<br>2. انسخ الرابط بالضغط على مشاركة.<br>3. ارفع الصورة على فيسبوك وأضف الصوت والرابط.<br>4. التقط لقطة شاشة وارفعها." },
-        whatsapp: { title: "💬 كيفية النشر على واتساب", text: "1. احفظ الصورة وانسخ الرابط.<br>2. ارفع الصورة في حالة واتساب.<br>3. أضف الرابط في الوصف.<br>4. التقط لقطة شاشة وارفعها." },
-        instagram: { title: "📸 كيفية النشر على انستغرام", text: "1. احفظ الصورة وانسخ الرابط.<br>2. ارفع الصورة في القصة أو منشور.<br>3. أضف الموسيقى والرابط.<br>4. التقط لقطة شاشة وارفعها." },
+        whatsapp: { title: "💬 كيفية النشر على واتساب", text: "1. احفظ الصورة وانسخ الرابط.<br>2. ارفع الصورة في حالة واتساب أو المجموعة.<br>3. أضف الرابط في الوصف.<br>4. التقط لقطة شاشة وارفعها." },
+        instagram: { title: "📸 كيفية النشر على انستغرام", text: "1. احفظ الصورة وانسخ الرابط.<br>2. ارفع الصورة في القصة أو منشور أو ريلز.<br>3. أضف الموسيقى والرابط.<br>4. التقط لقطة شاشة وارفعها." },
         tiktok: { title: "🎵 كيفية النشر على تيك توك", text: "1. احفظ الصورة وانسخ الرابط.<br>2. ارفع الصورة على تيك توك وأضف الصوت.<br>3. ضع الرابط في التعليقات.<br>4. التقط لقطة شاشة وارفعها." }
       },
       hi: {
         youtube: { title: "▶️ यूट्यूब पर पोस्ट कैसे करें", text: "1. इमेज सेव करें और लिंक कॉपी करें।<br>2. इमेज अपलोड करें और ऑडियो/म्यूजिक जोड़ें।<br>3. कॉपी किया हुआ लिंक पेस्ट करें।<br>4. स्क्रीनशॉट लें और अपलोड करें।" },
         facebook: { title: "📘 फेसबुक पर पोस्ट कैसे करें", text: "1. इमेज सेव करें और लिंक कॉपी करें।<br>2. इमेज अपलोड करें और ऑडियो/म्यूजिक जोड़ें।<br>3. कॉपी किया हुआ लिंक पेस्ट करें।<br>4. स्क्रीनशॉट लें और अपलोड करें।" },
-        whatsapp: { title: "💬 व्हाट्सएप पर पोस्ट कैसे करें", text: "1. इमेज सेव करें और लिंक कॉपी करें।<br>2. व्हाट्सएप स्टेटस पर इमेज लगाएं।<br>3. कॉपी किया हुआ लिंक पेस्ट करें।<br>4. स्क्रीनशॉट लें और अपलोड करें।" },
-        instagram: { title: "📸 इंस्टाग्राम पर पोस्ट कैसे करें", text: "1. इमेज सेव करें और लिंक कॉपी करें।<br>2. स्टोरी या पोस्ट पर इमेज लगाएं और म्यूजिक जोड़ें।<br>3. लिंक स्टिकर लगाएं।<br>4. स्क्रीनशॉट लें और अपलोड करें।" },
+        whatsapp: { title: "💬 व्हाट्सएप पर पोस्ट कैसे करें", text: "1. इमेज सेव करें और लिंक कॉपी करें।<br>2. व्हाट्सएप स्टेटस या ग्रुप पर इमेज लगाएं।<br>3. कॉपी किया हुआ लिंक पेस्ट करें।<br>4. स्क्रीनशॉट लें और अपलोड करें।" },
+        instagram: { title: "📸 इंस्टाग्राम पर पोस्ट कैसे करें", text: "1. इमेज सेव करें और लिंक कॉपी करें।<br>2. स्टोरी, रील्स या पोस्ट पर इमेज लगाएं और म्यूजिक जोड़ें।<br>3. लिंक स्टिकर लगाएं।<br>4. स्क्रीनशॉट लें और अपलोड करें।" },
         tiktok: { title: "🎵 टिकटॉक पर पोस्ट कैसे करें", text: "1. इमेज सेव करें और लिंक कॉपी करें।<br>2. इमेज अपलोड करें और साउंड जोड़ें।<br>3. कमेंट्स में लिंक पेस्ट करें।<br>4. स्क्रीनशॉट लें और अपलोड करें।" }
       }
     };
@@ -435,7 +424,9 @@
       }
     }
 
-    function closeAuthModal() { document.getElementById('authModal').style.display = 'none'; }
+    function closeAuthModal() {
+      document.getElementById('authModal').style.display = 'none';
+    }
 
     function handleAuthClick() {
       if(!currentUser) {
@@ -500,7 +491,7 @@
       const name = document.getElementById('authName').value.trim();
       const phone = document.getElementById('authPhone').value.trim();
       const pass = document.getElementById('authPassword').value.trim();
-      if (!name || !phone || !pass) { alert("Please fill all details!"); return; }
+      if (!name || !phone || !pass) { alert("تمام معلومات درج کریں!"); return; }
 
       const userObj = { name: name, phone: phone, pass: pass, totalShares: 0 };
       usersDb.child(phone).once('value', snap => {
@@ -528,7 +519,7 @@
       const title = document.getElementById('uTitle').value.trim();
       const price = document.getElementById('uPrice').value.trim();
       const link = document.getElementById('uLink').value.trim();
-      if(!title || !link || !currentUserImg) { alert("Please provide all required details!"); return; }
+      if(!title || !link || !currentUserImg) { alert("تمام معلومات فراہم کریں!"); return; }
 
       const loader = document.getElementById('uLoader');
       loader.style.display = "block";
@@ -546,7 +537,7 @@
             userName: currentUser.name, userPhone: currentUser.phone, timestamp: Date.now()
           }).then(() => {
             loader.style.display = "none";
-            alert("Deal submitted to Admin! 🚀");
+            alert("آپ کی ڈیل ایڈمن کو بھیج دی گئی ہے! 🚀");
             closeUploadModal();
           });
         }
@@ -555,7 +546,7 @@
 
     async function downloadImage(imgUrl, title) {
       try {
-        alert("Downloading image... ⏳");
+        alert("تصویر ڈاؤنلوڈ ہو رہی ہے... ⏳");
         const response = await fetch(imgUrl, { mode: 'cors' });
         const blob = await response.blob();
         const blobUrl = window.URL.createObjectURL(blob);
@@ -569,7 +560,7 @@
         
         window.URL.revokeObjectURL(blobUrl);
         document.body.removeChild(a);
-        alert("Success! Image saved to gallery 🚀");
+        alert("کامیابی! تصویر موبائل گیلری میں سیو ہو گئی ہے 🚀");
       } catch (error) {
         window.open(imgUrl, '_blank');
       }
@@ -606,7 +597,7 @@
         }).catch(() => {});
       } else {
         navigator.clipboard.writeText(shareMessage);
-        alert("Success! Share link copied.");
+        alert("کامیابی! شیئر میسج اور لنک کاپی ہو گیا ہے۔");
         openProofModal(key, title, link);
       }
     }
@@ -659,6 +650,7 @@
         }
 
         document.getElementById('proofModal').style.display = 'none';
+        alert("OK ✅");
       }
     }
 
@@ -702,77 +694,31 @@
       return keywords;
     }
 
-    function fileToBase64(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => {
-          let base64String = reader.result.replace(/^data:image\/(png|jpeg|jpg|webp);base64,/, "");
-          resolve(base64String);
-        };
-        reader.onerror = error => reject(error);
-      });
-    }
-
     async function verifySingleImage(index) {
       if (!proofFiles[index]) return;
       const loader = document.getElementById('proofLoader');
       const verifyBtn = document.getElementById(`verifyBtn${index}`);
       const badge = document.getElementById(`badge${index}`);
-      const txt = i18n[activeLang];
 
       loader.style.display = 'block';
-      loader.innerText = `Scanning ${platformNames[index]} Screenshot... 🔍⏳`;
+      loader.innerText = `Scanning ${platformNames[index]} UI & Link... 🔍⏳`;
       verifyBtn.disabled = true;
 
       let targetLinkKey = extractUrlKey(selectedProdLink).toLowerCase().replace(/[^a-z0-9]/g, '');
 
       try {
-        const base64Image = await fileToBase64(proofFiles[index]);
+        const ocrResult = await Tesseract.recognize(proofFiles[index], 'eng');
+        const scannedText = ocrResult.data.text.toLowerCase();
+        const cleanScannedText = scannedText.replace(/[^a-z0-9]/g, '');
 
-        const requestBody = {
-          requests: [
-            {
-              image: { content: base64Image },
-              features: [
-                { type: 'TEXT_DETECTION' },
-                { type: 'LOGO_DETECTION' },
-                { type: 'LABEL_DETECTION' }
-              ]
-            }
-          ]
-        };
+        const requiredPlatformKw = platformKeywords[index];
+        let isPlatformMatch = requiredPlatformKw.some(kw => scannedText.includes(kw));
 
-        const visionResponse = await fetch(`https://vision.googleapis.com/v1/images:annotate?key=${GOOGLE_VISION_API_KEY}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody)
-        });
-
-        const visionResult = await visionResponse.json();
-        const responseData = (visionResult.responses && visionResult.responses[0]) ? visionResult.responses[0] : {};
-
-        let fullText = (responseData.fullTextAnnotation ? responseData.fullTextAnnotation.text : '').toLowerCase();
-        let cleanScannedText = fullText.replace(/[^a-z0-9]/g, '');
-
-        let logoAnnotations = responseData.logoAnnotations || [];
-        let labelAnnotations = responseData.labelAnnotations || [];
-
-        let detectedLogos = logoAnnotations.map(l => l.description ? l.description.toLowerCase() : '');
-        let detectedLabels = labelAnnotations.map(l => l.description ? l.description.toLowerCase() : '');
-
-        let targetPlatform = platformNames[index].toLowerCase();
-        let isPlatformMatch = false;
-
-        if (detectedLogos.includes(targetPlatform) || detectedLabels.includes(targetPlatform)) {
+        // Smart fallback logic: If link or serial is recognized, treat platform match flexibly
+        let isLinkMatch = (targetLinkKey.length > 3 && cleanScannedText.includes(targetLinkKey));
+        if (isLinkMatch) {
           isPlatformMatch = true;
-        } else {
-          const requiredPlatformKw = platformKeywords[index];
-          isPlatformMatch = requiredPlatformKw.some(kw => fullText.includes(kw));
         }
-
-        if (index === 1 && (fullText.includes("create story") || fullText.includes("facebook"))) isPlatformMatch = false;
-        if (index === 2 && (fullText.includes("shorts") || fullText.includes("subscribe"))) isPlatformMatch = false;
 
         if (!isPlatformMatch) {
           loader.style.display = "none";
@@ -782,11 +728,9 @@
           verifyBtn.disabled = false;
           verifiedStates[index] = false;
           checkAllVerificationStatuses();
-          alert(txt.wrongAppAlert.replace(/{platform}/g, platformNames[index]));
+          alert(`❌ غلط اسکرین شاٹ!\nیہ تصویر ${platformNames[index]} کی نہیں ہے۔ برائے مہربانی صرف ${platformNames[index]} ایپ کا سکرین شاٹ اپلوڈ کریں!`);
           return;
         }
-
-        let isLinkMatch = (targetLinkKey.length > 3 && cleanScannedText.includes(targetLinkKey));
 
         if (!isLinkMatch) {
           const targetKeywords = getKeywordsFromProd(selectedProdTitle);
@@ -800,7 +744,7 @@
             verifyBtn.disabled = false;
             verifiedStates[index] = false;
             checkAllVerificationStatuses();
-            alert(txt.noLinkAlert.replace(/{index}/g, index));
+            alert(`❌ اسکرین شاٹ #${index} میں پروڈکٹ لنک یا نام نہیں ملا۔ صحیح پوسٹ کا اسکرین شاٹ اپلوڈ کریں!`);
             return;
           }
         }
@@ -823,7 +767,7 @@
         }
       } catch(e) {
         verifyBtn.disabled = false;
-        alert(txt.scanErr);
+        alert("اسکیننگ کے دوران مسئلہ آیا، دوبارہ کوشش کریں۔");
       }
 
       loader.style.display = 'none';
