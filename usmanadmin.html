@@ -34,7 +34,7 @@
     .file-input-box input[type="file"] { display: none; }
     
     .preview-container { display: flex; gap: 8px; overflow-x: auto; margin-top: 10px; justify-content: center; flex-wrap: wrap; }
-    .preview-img { width: 70px; height: 70px; object-fit: cover; border-radius: 8px; border: 2px solid #2563eb; }
+    .preview-img { width: 68px; height: 68px; object-fit: cover; border-radius: 8px; border: 2px solid #2563eb; }
 
     .add-btn { width: 100%; background: #2563eb; color: #fff; border: none; padding: 12px; font-weight: bold; border-radius: 8px; cursor: pointer; font-size: 14px; margin-top: 8px; }
 
@@ -139,9 +139,9 @@
     </button>
     <div class="collapsible-content" id="bulkImportSection">
       <div class="form-group">
-        <label>کسی بھی نیٹ ورک کی (CSV / Excel) فائل منتخب کریں:</label>
+        <label>کسی بھی نیٹ ورک کی (CSV / Excel) فائل منتخب کریں (ڈسکاؤنٹ قیمت & 4 تصاویر آٹو امپورٹ):</label>
         <div class="file-input-box" onclick="document.getElementById('csvFileInput').click()">
-          <span id="csvStatusText">📥 ڈائریکٹ ایکسل/CSV فائل منتخب کرنے لیے کلک کریں</span>
+          <span id="csvStatusText">📥 ڈائریکٹ ایکسل/CSV فائل منتخب کرنے کے لیے کلک کریں</span>
           <input type="file" id="csvFileInput" accept=".csv, .xlsx, .xls" onchange="fileSelected(event)">
         </div>
       </div>
@@ -186,7 +186,7 @@
 
       <hr style="margin: 12px 0; border: 0; border-top: 1px dashed #cbd5e1;">
 
-      <!-- Manual Single Upload Form with Gallery Support -->
+      <!-- Manual Single Upload Form with Gallery Support (1 to 4 Images) -->
       <div class="form-group">
         <label>پروڈکٹ کا عنوان (Title):</label>
         <input type="text" id="pTitle" placeholder="عنوان...">
@@ -216,11 +216,11 @@
         <input type="text" id="pLink" placeholder="https://..." dir="ltr">
       </div>
 
-      <!-- Enhanced Gallery Upload Input -->
+      <!-- Enhanced Gallery Upload Input (1 to 4 Images) -->
       <div class="form-group">
-        <label>🖼️ گیلری سے تصاویر منتخب کریں (میکسیمم 3 تصاویر):</label>
+        <label>🖼️ گیلری سے تصاویر منتخب کریں (1 سے 4 تصاویر):</label>
         <div class="file-input-box" onclick="document.getElementById('imgFileInput').click()">
-          <span id="fileStatusText">📷 موبائل گیلری کھولیں اور تصاویر سلیکٹ کریں</span>
+          <span id="fileStatusText">📷 موبائل گیلری کھولیں اور تصاویر سلیکٹ کریں (زیادہ سے زیادہ 4)</span>
           <input type="file" id="imgFileInput" accept="image/*" multiple onchange="previewSelectedImages(event)">
           <div id="previewContainer" class="preview-container"></div>
         </div>
@@ -437,7 +437,7 @@
       });
     }
 
-    /* 1. Screenshot Proofs Verification (Pending stays open, Approved becomes collapsible strip) */
+    /* 1. Screenshot Proofs Verification */
     function renderProofsList() {
       const container = document.getElementById('proofsList');
       proofsDb.on('value', (snap) => {
@@ -646,7 +646,7 @@
       }
     }
 
-    /* Modal 1 Search: User Uploaded Deals (With Serial Number on Top of Strip) */
+    /* Modal 1 Search: User Uploaded Deals */
     function searchUserUploadedDeals() {
       const query = document.getElementById('dealsPhoneSearch').value.toLowerCase().trim();
       const resultsDiv = document.getElementById('userDealsResults');
@@ -686,7 +686,7 @@
       resultsDiv.innerHTML = html || '<p style="font-size:11px; color:#ef4444;">کوئی یوزر اپلوڈ شدہ ڈیل نہیں ملی۔</p>';
     }
 
-    /* Modal 2 Search: User Shares (With Serial Number on Top of Strip) */
+    /* Modal 2 Search: User Shares */
     function searchUserShares() {
       const query = document.getElementById('sharesPhoneSearch').value.toLowerCase().trim();
       const resultsDiv = document.getElementById('userSharesResults');
@@ -736,7 +736,7 @@
       });
     }
 
-    /* 4. Universal Bulk Import for AliExpress, Daraz, Amazon */
+    /* 4. Universal Bulk Import (Prioritizes Discount/Sale Price & Collects up to 4 Images) */
     function fileSelected(event) {
       const file = event.target.files[0];
       if (file) {
@@ -775,22 +775,54 @@
 
       rows.forEach(row => {
         const keys = Object.keys(row);
-        let title = "", link = "", price = "", img = "", category = "";
+        let title = "", link = "", category = "";
+        let discountPrice = "", fallbackPrice = "";
+        let imageUrls = [];
 
         keys.forEach(k => {
           const keyLower = k.toLowerCase().trim();
           const val = row[k] ? row[k].toString().trim() : "";
           if (!val) return;
 
+          // 1. Extract Title
           if ((keyLower.includes('title') || keyLower.includes('product desc') || keyLower.includes('subject') || keyLower.includes('name') || keyLower.includes('product_name')) && isNaN(val) && val.length > 3) {
             if(!title) title = val;
           }
+
+          // 2. Extract Images (1 to 4 unique images) & Product Link
           if (val.includes('http://') || val.includes('https://')) {
-            if (val.includes('.jpg') || val.includes('.png') || val.includes('.jpeg') || val.includes('.webp') || keyLower.includes('image') || keyLower.includes('img')) {
-              if(!img) img = val;
-            } else { if(!link) link = val; }
+            const parts = val.split(/[\s,;|\n]+/).filter(u => u.startsWith('http'));
+            parts.forEach(u => {
+              const uLower = u.toLowerCase();
+              const isImg = uLower.includes('.jpg') || uLower.includes('.png') || uLower.includes('.jpeg') || uLower.includes('.webp') ||
+                            uLower.includes('alicdn.com') || uLower.includes('media-amazon.com') || uLower.includes('imgbb.com') ||
+                            keyLower.includes('image') || keyLower.includes('img') || keyLower.includes('pic') || keyLower.includes('photo');
+              if (isImg) {
+                if (!imageUrls.includes(u) && imageUrls.length < 4) {
+                  imageUrls.push(u);
+                }
+              } else {
+                if (!link) link = u;
+              }
+            });
           }
-          if (keyLower.includes('price') || keyLower.includes('sar') || keyLower.includes('pkr')) { if(!price) price = val; }
+
+          // 3. Extract Price (Strictly prioritize Discount / Sale / Promotion Price over Original Price)
+          if (keyLower.includes('price') || keyLower.includes('sar') || keyLower.includes('pkr') || keyLower.includes('amount')) {
+            const isDiscountCol = keyLower.includes('discount') || keyLower.includes('sale') || keyLower.includes('promo') ||
+                                  keyLower.includes('offer') || keyLower.includes('final') || keyLower.includes('now') ||
+                                  keyLower.includes('target');
+            const isOriginalCol = keyLower.includes('origin') || keyLower.includes('old') || keyLower.includes('regular') || keyLower.includes('list');
+
+            if (isDiscountCol && !discountPrice) {
+              discountPrice = val;
+            } else if (!isOriginalCol && !fallbackPrice) {
+              fallbackPrice = val;
+            } else if (!fallbackPrice) {
+              fallbackPrice = val;
+            }
+          }
+
           if (keyLower.includes('category')) { if(!category) category = val; }
         });
 
@@ -801,22 +833,28 @@
           });
         }
 
+        let chosenPrice = discountPrice || fallbackPrice || "Best Price";
+        if (chosenPrice !== "Best Price" && /^\d+(\.\d+)?$/.test(chosenPrice)) {
+          chosenPrice = `SAR ${chosenPrice}`;
+        }
+
         if (title && link) {
           let platform = 'aliexpress';
           if (link.includes('amazon')) platform = 'amazon';
           if (link.includes('daraz')) platform = 'daraz';
 
           const serialCode = generateSerialNumber();
-          const finalImgs = img ? [img] : ["https://via.placeholder.com/150"];
+          const finalImgs = imageUrls.length > 0 ? imageUrls.slice(0, 4) : ["https://via.placeholder.com/150"];
+
           updates[serialCode] = {
             serialNumber: serialCode,
             title: title.substring(0, 90),
             category: category ? category.toLowerCase().trim() : 'electronics',
-            price: price ? price : "Best Price",
+            price: chosenPrice,
             link: link,
             platform: platform,
-            images: finalImgs.slice(0, 3),
-            img: img || "https://via.placeholder.com/150",
+            images: finalImgs,
+            img: finalImgs[0],
             pinned: false,
             timestamp: Date.now(),
             shares: 0,
@@ -829,7 +867,7 @@
 
       db.update(updates).then(() => {
         document.getElementById('importLoader').style.display = "none";
-        alert(`کامیابی! تمام ${count} پروڈکٹس امپورٹ ہو گئی ہیں! 🚀`);
+        alert(`کامیابی! تمام ${count} پروڈکٹس اصل ڈسکاؤنٹ قیمت کے ساتھ امپورٹ ہو گئی ہیں! 🚀`);
       });
     }
 
@@ -899,13 +937,13 @@
       });
     }
 
-    /* 6. Single Manual Product Upload with Auto Local Image Compression */
+    /* 6. Single Manual Product Upload (1 to 4 Images Supported) */
     function previewSelectedImages(event) {
-      selectedFiles = Array.from(event.target.files).slice(0, 3);
+      selectedFiles = Array.from(event.target.files).slice(0, 4);
       const container = document.getElementById('previewContainer');
       container.innerHTML = '';
       if (selectedFiles.length > 0) {
-        document.getElementById('fileStatusText').innerText = `${selectedFiles.length} تصاویر منتخب کی گئیں (میکسیمم 3) ✅`;
+        document.getElementById('fileStatusText').innerText = `${selectedFiles.length} تصاویر منتخب کی گئیں (زیادہ سے زیادہ 4) ✅`;
         selectedFiles.forEach(file => {
           const reader = new FileReader();
           reader.onload = e => {
@@ -930,7 +968,7 @@
       loader.style.display = "block";
       let uploadedUrls = [];
 
-      for (let rawFile of selectedFiles) {
+      for (let rawFile of selectedFiles.slice(0, 4)) {
         try {
           const compressedFile = await compressImageFile(rawFile, 1200, 0.8);
           
@@ -951,7 +989,7 @@
       if (link.includes('daraz')) platform = 'daraz';
 
       const serialCode = generateSerialNumber();
-      const finalImgs = uploadedUrls.slice(0, 3);
+      const finalImgs = uploadedUrls.slice(0, 4);
       db.child(serialCode).set({
         serialNumber: serialCode,
         title: title, category: category, price: price || "Best Price", link: link,
@@ -959,12 +997,12 @@
         images: finalImgs, img: finalImgs[0], pinned: false, timestamp: Date.now(),
         shares: 0, userPhone: 'Admin', userName: 'Admin'
       }).then(() => {
-        alert(`پروڈکٹ سیریل نمبر (${serialCode}) کے ساتھ گیلری کی تصویر سے شائع ہو گئی ہے! 🚀`);
+        alert(`پروڈکٹ سیریل نمبر (${serialCode}) اور ${finalImgs.length} تصویر/تصاویر کے ساتھ شائع ہو گئی ہے! 🚀`);
         document.getElementById('pTitle').value = '';
         document.getElementById('pLink').value = '';
         document.getElementById('previewContainer').innerHTML = '';
         selectedFiles = [];
-        document.getElementById('fileStatusText').innerText = '📷 موبائل گیلری کھولیں اور تصاویر سلیکٹ کریں';
+        document.getElementById('fileStatusText').innerText = '📷 موبائل گیلری کھولیں اور تصاویر سلیکٹ کریں (زیادہ سے زیادہ 4)';
       });
     }
 
@@ -1026,7 +1064,7 @@
         if(item) {
           const serialCode = generateSerialNumber();
           let rawImgs = item.images || [item.img];
-          const finalImgs = rawImgs.slice(0, 3);
+          const finalImgs = rawImgs.slice(0, 4);
           
           let platform = item.platform || 'aliexpress';
           if (item.link && item.link.includes('amazon')) platform = 'amazon';
@@ -1103,6 +1141,7 @@
                 <div>
                   <span class="serial-tag">🏷️ ${serialTag}</span> ${pBadge}
                   <div class="item-title">${item.title}</div>
+                  <div style="font-size:10px; color:#16a34a; font-weight:bold;">${item.price || ''}</div>
                 </div>
               </div>
               <div>
