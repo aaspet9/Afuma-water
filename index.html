@@ -752,15 +752,15 @@
       } catch (e) { loader.style.display = "none"; }
     }
 
-    /* Draws Product Code & App Link Banner directly at TOP of saved image */
+    /* Draws Product Code & Short App Link (aaspet9.github.io) at TOP of saved image */
     async function downloadImage(imgUrl, title, serialCode) {
       const codeText = serialCode || 'DEAL';
-      const appItemUrl = `https://aaspet9.github.io/?item=${encodeURIComponent(codeText)}`;
+      const shortAppUrl = 'aaspet9.github.io';
       const topBannerLine1 = `This is product code: ${codeText}`;
-      const topBannerLine2 = appItemUrl;
+      const topBannerLine2 = shortAppUrl;
 
       try {
-        alert("تصویر کے اوپر کوڈ اور ایپ لنک لگا کر سیو ہو رہی ہے... ⏳");
+        alert("تصویر کے اوپر کوڈ اور شارٹ لنک لگا کر سیو ہو رہی ہے... ⏳");
         const response = await fetch(imgUrl, { mode: 'cors' });
         const blob = await response.blob();
         const blobUrl = window.URL.createObjectURL(blob);
@@ -805,9 +805,9 @@
         ctx.fillStyle = '#0f172a';
         ctx.fillText(topBannerLine1, targetWidth / 2, bannerHeight * 0.34);
 
-        // Line 2: App Link
-        const linkFontSize = Math.max(15, Math.round(bannerHeight * 0.24));
-        ctx.font = `700 ${linkFontSize}px monospace`;
+        // Line 2: Short App Link (aaspet9.github.io)
+        const linkFontSize = Math.max(16, Math.round(bannerHeight * 0.25));
+        ctx.font = `800 ${linkFontSize}px monospace`;
         ctx.fillStyle = '#1d4ed8';
         ctx.fillText(topBannerLine2, targetWidth / 2, bannerHeight * 0.72);
 
@@ -830,7 +830,7 @@
           a.click();
           window.URL.revokeObjectURL(finalUrl);
           document.body.removeChild(a);
-          alert("کامیابی! تصویر کے اوپر کوڈ اور ایپ لنک کے ساتھ گیلری میں سیو ہو گئی ہے 🚀");
+          alert("کامیابی! تصویر کے اوپر کوڈ اور aaspet9.github.io کے ساتھ سیو ہو گئی ہے 🚀");
         }, 'image/jpeg', 0.92);
 
       } catch (error) {
