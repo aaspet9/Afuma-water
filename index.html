@@ -752,15 +752,15 @@
       } catch (e) { loader.style.display = "none"; }
     }
 
-    /* Draws Product Code & Short App Link (aaspet9.github.io) at TOP of saved image */
+    /* Draws Product Code + Google Link Guide + Search Code Guide at TOP of saved image */
     async function downloadImage(imgUrl, title, serialCode) {
       const codeText = serialCode || 'DEAL';
-      const shortAppUrl = 'aaspet9.github.io';
       const topBannerLine1 = `This is product code: ${codeText}`;
-      const topBannerLine2 = shortAppUrl;
+      const topBannerLine2 = `Open on Google: aaspet9.github.io`;
+      const topBannerLine3 = `Search any product code in app`;
 
       try {
-        alert("تصویر کے اوپر کوڈ اور شارٹ لنک لگا کر سیو ہو رہی ہے... ⏳");
+        alert("تصویر کے اوپر کوڈ اور ایپ کھولنے کی مکمل تفصیل لگا کر سیو ہو رہی ہے... ⏳");
         const response = await fetch(imgUrl, { mode: 'cors' });
         const blob = await response.blob();
         const blobUrl = window.URL.createObjectURL(blob);
@@ -776,7 +776,7 @@
 
         const canvas = document.createElement('canvas');
         const targetWidth = Math.max(800, img.naturalWidth || 800);
-        const bannerHeight = Math.round(targetWidth * 0.16);
+        const bannerHeight = Math.round(targetWidth * 0.21);
         const imgHeight = Math.round((img.naturalHeight / (img.naturalWidth || 1)) * targetWidth);
 
         canvas.width = targetWidth;
@@ -800,16 +800,22 @@
         ctx.textBaseline = 'middle';
 
         // Line 1: Product Code
-        const codeFontSize = Math.max(22, Math.round(bannerHeight * 0.36));
+        const codeFontSize = Math.max(22, Math.round(bannerHeight * 0.28));
         ctx.font = `900 ${codeFontSize}px system-ui, -apple-system, sans-serif`;
         ctx.fillStyle = '#0f172a';
-        ctx.fillText(topBannerLine1, targetWidth / 2, bannerHeight * 0.34);
+        ctx.fillText(topBannerLine1, targetWidth / 2, bannerHeight * 0.24);
 
-        // Line 2: Short App Link (aaspet9.github.io)
-        const linkFontSize = Math.max(16, Math.round(bannerHeight * 0.25));
+        // Line 2: Open on Google Link
+        const linkFontSize = Math.max(16, Math.round(bannerHeight * 0.20));
         ctx.font = `800 ${linkFontSize}px monospace`;
         ctx.fillStyle = '#1d4ed8';
-        ctx.fillText(topBannerLine2, targetWidth / 2, bannerHeight * 0.72);
+        ctx.fillText(topBannerLine2, targetWidth / 2, bannerHeight * 0.56);
+
+        // Line 3: Search Any Product Code Instruction
+        const searchHintFontSize = Math.max(14, Math.round(bannerHeight * 0.17));
+        ctx.font = `700 ${searchHintFontSize}px system-ui, -apple-system, sans-serif`;
+        ctx.fillStyle = '#1e293b';
+        ctx.fillText(topBannerLine3, targetWidth / 2, bannerHeight * 0.82);
 
         // Draw Original Product Image below the top banner
         ctx.drawImage(img, 0, bannerHeight, targetWidth, imgHeight);
@@ -830,7 +836,7 @@
           a.click();
           window.URL.revokeObjectURL(finalUrl);
           document.body.removeChild(a);
-          alert("کامیابی! تصویر کے اوپر کوڈ اور aaspet9.github.io کے ساتھ سیو ہو گئی ہے 🚀");
+          alert("کامیابی! تصویر کے اوپر کوڈ اور مکمل گائیڈ کے ساتھ سیو ہو گئی ہے 🚀");
         }, 'image/jpeg', 0.92);
 
       } catch (error) {
