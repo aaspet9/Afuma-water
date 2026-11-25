@@ -1071,26 +1071,52 @@
       if (scannedText.includes("message") && (scannedText.includes("today") || scannedText.includes("you") || scannedText.includes("group"))) scores[3] += 4;
       if (scannedText.includes("whatsapp") || scannedText.includes("invite via link") || scannedText.includes("add members")) scores[3] += 4;
 
-      // 1. YouTube
-      if ((scannedText.includes("seconds ago") || scannedText.includes("minutes ago") || scannedText.includes("hours ago") || scannedText.includes("days ago")) && !scannedText.includes("photo") && !scannedText.includes("just now")) {
-        scores[1] += 4;
-      }
-      if (scannedText.includes("youtube") || scannedText.includes("subscribe") || scannedText.includes("shorts") || scannedText.includes("community")) {
-        scores[1] += 4;
-      }
-      if (vis.hasDarkBottom && vis.greenBubbleRatio < 0.01 && vis.blueRatio < 0.005 && !vis.hasTikTokRightIcons && !scannedText.includes("view insights") && !scannedText.includes("boost post")) {
-        scores[1] += 3;
+      // 4. TikTok (distinctive top tabs: Following / Friends / For You or right vertical icon column)
+      const isTikTok = (vis.hasTikTokRightIcons && vis.hasDarkBottom) ||
+        scannedText.includes("following") ||
+        scannedText.includes("for you") ||
+        scannedText.includes("friends") ||
+        scannedText.includes("tiktok") ||
+        (scannedText.includes("explore") && scannedText.includes("inbox"));
+
+      if (isTikTok && vis.greenBubbleRatio < 0.02) {
+        scores[4] += 6;
       }
 
-      // 2. Facebook
-      if (vis.whiteBgRatio > 0.22 && vis.hasWhiteBottom) scores[2] += 4;
-      if (scannedText.includes("just now") || scannedText.includes("is in ") || scannedText.includes("manage posts") || scannedText.includes("facebook")) scores[2] += 4;
-      if (scannedText.includes("boost") && !scannedText.includes("boost post") && !scannedText.includes("view insights")) scores[2] += 4;
+      // 2. Facebook (white layout + "just now" / "boost" / "facebook")
+      const isFacebook = !isTikTok && vis.greenBubbleRatio < 0.02 && (
+        scannedText.includes("just now") ||
+        scannedText.includes("is in ") ||
+        scannedText.includes("manage posts") ||
+        scannedText.includes("facebook") ||
+        scannedText.includes("boost") ||
+        (vis.whiteBgRatio > 0.22 && vis.hasWhiteBottom)
+      );
 
-      // 4. TikTok
-      if (vis.hasTikTokRightIcons && vis.hasDarkBottom) scores[4] += 5;
-      if (scannedText.includes("explore") && scannedText.includes("inbox")) scores[4] += 5;
-      if (scannedText.includes("for you") || scannedText.includes("following") || scannedText.includes("tiktok") || scannedText.includes("hide")) scores[4] += 4;
+      if (isFacebook) {
+        scores[2] += 5;
+      }
+
+      // 1. YouTube (Post / Shorts / Community / Channel / Dark bar without TikTok tabs)
+      if (!isTikTok && !isFacebook && vis.greenBubbleRatio < 0.02) {
+        scores[1] += 4;
+        if (
+          scannedText.includes("youtube") ||
+          scannedText.includes("subscribe") ||
+          scannedText.includes("shorts") ||
+          scannedText.includes("community") ||
+          scannedText.includes("post") ||
+          scannedText.includes("seconds ago") ||
+          scannedText.includes("minutes ago") ||
+          scannedText.includes("hours ago") ||
+          scannedText.includes("days ago")
+        ) {
+          scores[1] += 4;
+        }
+        if (vis.hasDarkBottom) {
+          scores[1] += 2;
+        }
+      }
 
       let detectedIndex = 0;
       let maxScore = 0;
